@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VenueIQ — Smart Venue Platform</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#08090e;--bg1:#0d1117;--bg2:#111827;--bg3:#1a2030;
+  --brd:#1e2a3a;--brd2:#253040;
+  --t:#e2e8f0;--t2:#94a3b8;--t3:#64748b;
+  --red:#ef4444;--rdim:#3b1818;--rbrd:#7f1d1d;
+  --amb:#f59e0b;--adim:#2a1a08;--abrd:#78350f;
+  --grn:#22c55e;--gdim:#0a1f12;--gbrd:#14532d;
+  --blu:#378add;--bdim:#0c1a2e;--bbrd:#0f3560;
+  --rad:10px;--rads:6px;
+}
+body{background:var(--bg);color:var(--t);font-family:system-ui,-apple-system,sans-serif;font-size:13px;min-height:100vh}
+
+/* MODE SWITCHER */
+.mode-bar{background:#050810;border-bottom:2px solid var(--brd);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:44px;position:sticky;top:0;z-index:200}
+.mode-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:#f1f5f9}
+.mode-logo-mark{width:26px;height:26px;background:#185fa5;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.mode-logo-mark svg{width:14px;height:14px;fill:white}
+.mode-toggle{display:flex;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;overflow:hidden}
+.mode-btn{padding:6px 20px;font-size:12px;font-weight:500;cursor:pointer;transition:.15s;border:none;background:transparent;color:var(--t3)}
+.mode-btn.active{background:#185fa5;color:white}
+.mode-right{font-size:11px;color:var(--t3);display:flex;gap:16px;align-items:center}
+.live-chip{display:flex;align-items:center;gap:5px;color:#4ade80}
+.livd{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* TOPBAR */
+.topbar{height:50px;background:var(--bg1);border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:44px;z-index:100}
+.t-logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#f1f5f9}
+.venue-name{font-size:11px;color:var(--t3);font-weight:400;margin-left:4px}
+.t-meta{display:flex;gap:18px;font-size:11px;color:var(--t3)}
+.t-meta b{color:var(--t2);font-weight:500}
+.em-btn-top{padding:5px 14px;background:var(--rdim);border:1px solid var(--rbrd);border-radius:20px;color:#fca5a5;font-size:11px;cursor:pointer;font-weight:500}
+
+/* NAV */
+.nav{background:var(--bg1);border-bottom:1px solid var(--brd);display:flex;padding:0 24px;position:sticky;top:94px;z-index:90}
+.nv{padding:11px 16px;font-size:12px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.nv:hover{color:var(--t2)}
+.nv.active{color:#60a5fa;border-bottom-color:var(--blu)}
+.nvd{width:6px;height:6px;border-radius:50%}
+
+/* PAGE */
+.page{display:none;padding:24px;min-height:calc(100vh - 140px)}
+.page.active{display:block}
+.pg-title{font-size:18px;font-weight:600;color:#f1f5f9;margin-bottom:3px}
+.pg-sub{font-size:12px;color:var(--t3);margin-bottom:24px}
+.sec-lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--brd)}
+.card{background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);padding:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tag{display:inline-flex;align-items:center;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.tag-r{background:var(--rdim);color:#fca5a5;border:1px solid var(--rbrd)}
+.tag-a{background:var(--adim);color:#fde68a;border:1px solid var(--abrd)}
+.tag-g{background:var(--gdim);color:#86efac;border:1px solid var(--gbrd)}
+.tag-b{background:var(--bdim);color:#93c5fd;border:1px solid var(--bbrd)}
+
+/* STAT CARDS */
+.stat{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rad);padding:16px 18px}
+.sv{font-size:26px;font-weight:600;line-height:1.1;margin-bottom:2px}
+.sl{font-size:11px;color:var(--t3)}
+.ss{font-size:11px;margin-top:4px}
+
+/* QUEUE ROW */
+.qrow{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);margin-bottom:9px;transition:.15s}
+.qrow:hover{border-color:var(--brd2)}
+.qico{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.qinfo{flex:1}
+.qname{font-size:13px;font-weight:500;color:#e2e8f0;margin-bottom:2px}
+.qsub{font-size:11px;color:var(--t3)}
+.qbar-w{width:160px;flex-shrink:0}
+.qbar-bg{height:5px;background:var(--brd);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.qbar-f{height:5px;border-radius:3px;transition:width .6s}
+.qwait{font-size:14px;font-weight:600;text-align:right}
+.qwlbl{font-size:10px;color:var(--t3);text-align:right}
+.qtip{font-size:11px;color:#4ade80;padding:3px 10px;background:var(--gdim);border-radius:4px;border-left:2px solid #16a34a;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* CHAT */
+.chat-outer{background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);overflow:hidden;max-width:680px;margin:0 auto}
+.chat-hdr{padding:12px 18px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px}
+.chat-av{width:30px;height:30px;border-radius:50%;background:#185fa5;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0}
+.chat-msgs{height:360px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg-u{align-self:flex-end;max-width:72%}
+.msg-a{align-self:flex-start;max-width:72%}
+.bub{padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.55}
+.bub-u{background:#185fa5;color:white;border-radius:12px 12px 2px 12px}
+.bub-a{background:var(--bg2);border:1px solid var(--brd);border-radius:12px 12px 12px 2px;color:#e2e8f0}
+.msg-meta{font-size:10px;color:var(--t3);margin-top:3px;text-align:right}
+.msg-a .msg-meta{text-align:left}
+.chips{padding:9px 16px;border-top:1px solid var(--brd);display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:4px 11px;border-radius:20px;font-size:11px;background:var(--bg2);border:1px solid var(--brd);color:var(--t2);cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--bbrd);color:#93c5fd;background:var(--bdim)}
+.cinp-row{padding:11px 16px;border-top:1px solid var(--brd);display:flex;gap:9px;background:var(--bg)}
+.cinp{flex:1;background:var(--bg2);border:1px solid var(--brd);border-radius:7px;padding:8px 12px;color:#e2e8f0;font-size:13px;outline:none;transition:.15s}
+.cinp:focus{border-color:var(--blu)}
+.cinp::placeholder{color:var(--t3)}
+.csend{background:#185fa5;border:none;border-radius:7px;color:white;padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer}
+
+/* ALERTS */
+.alcard{padding:13px 16px;border-radius:var(--rad);margin-bottom:9px;border:1px solid;display:flex;align-items:flex-start;gap:11px}
+.al-crit{background:var(--rdim);border-color:var(--rbrd)}
+.al-warn{background:var(--adim);border-color:var(--abrd)}
+.al-info{background:var(--bdim);border-color:var(--bbrd)}
+.al-ok{background:var(--gdim);border-color:var(--gbrd)}
+.alind{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.al-t{font-size:13px;font-weight:500;margin-bottom:3px}
+.al-b{font-size:12px;color:var(--t2);line-height:1.5}
+.al-time{font-size:10px;color:var(--t3);margin-top:5px}
+
+/* TEAM BOARD */
+.tbrd{background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);overflow:hidden}
+.tmsg{padding:11px 14px;border-bottom:1px solid var(--brd);display:flex;gap:9px}
+.tmsg:last-child{border-bottom:none}
+.tav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;color:white}
+.tnm{font-size:10px;color:var(--t3);margin-bottom:3px}
+.ttxt{font-size:12px;color:#e2e8f0;line-height:1.4}
+.tai{font-size:11px;color:#4ade80;margin-top:4px;padding:3px 8px;background:var(--gdim);border-radius:4px;border-left:2px solid #16a34a}
+.tinp-row{padding:9px 12px;border-top:1px solid var(--brd);display:flex;gap:7px}
+.tinp{flex:1;background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rads);padding:6px 11px;color:#e2e8f0;font-size:12px;outline:none}
+.tinp:focus{border-color:var(--blu)}
+.tinp::placeholder{color:var(--t3)}
+.tsend{background:var(--bdim);border:1px solid var(--bbrd);border-radius:var(--rads);color:#93c5fd;font-size:11px;padding:6px 13px;cursor:pointer;font-weight:500}
+
+/* EM PANEL */
+.em-panel{background:var(--rdim);border:1px solid var(--rbrd);border-radius:var(--rad);padding:16px}
+.em-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ebtn{padding:10px;border-radius:var(--rads);font-size:12px;font-weight:500;cursor:pointer;border:1px solid;text-align:center;transition:.15s}
+.ebtn:hover{opacity:.85}
+.eb-r{background:var(--rdim);border-color:#dc2626;color:#fca5a5}
+.eb-a{background:var(--adim);border-color:#d97706;color:#fde68a}
+.eb-b{background:var(--bdim);border-color:#185fa5;color:#93c5fd}
+.eb-g{background:var(--gdim);border-color:#16a34a;color:#86efac}
+
+/* CAMERA MANAGEMENT */
+.cam-grid-mgmt{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.cam-card-m{background:#050810;border:1px solid var(--brd);border-radius:var(--rads);overflow:hidden;cursor:pointer;transition:.15s;position:relative}
+.cam-card-m:hover{border-color:var(--brd2)}
+.cam-card-m.sel{border-color:var(--blu);box-shadow:0 0 0 1px #378add22}
+.cam-card-m.disabled{opacity:.4}
+.cam-vis{width:100%;height:100px;position:relative;overflow:hidden;background:#050810}
+.cam-lbl-bar{position:absolute;bottom:0;left:0;right:0;padding:4px 8px;background:rgba(5,8,16,.88);display:flex;align-items:center;justify-content:space-between}
+.cam-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cam-del-btn{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:var(--rdim);border:1px solid var(--rbrd);color:#fca5a5;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:.15s;font-weight:700;line-height:1}
+.cam-card-m:hover .cam-del-btn{opacity:1}
+.add-cam-btn{background:transparent;border:1px dashed var(--brd2);border-radius:var(--rads);display:flex;flex-direction:column;align-items:center;justify-content:center;height:130px;cursor:pointer;color:var(--t3);font-size:12px;gap:6px;transition:.15s}
+.add-cam-btn:hover{border-color:var(--blu);color:#93c5fd;background:var(--bdim)}
+.add-icon{width:28px;height:28px;border-radius:50%;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1}
+.cam-detail-panel{background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);padding:16px;margin-bottom:14px;display:none}
+.cam-detail-panel.show{display:block}
+
+/* ZONE DETAIL */
+.zdp{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rad);padding:16px;margin-top:12px;display:none}
+.zdp.show{display:block}
+
+/* ATTENDEE PANEL STYLES */
+.att-page{background:var(--bg);min-height:calc(100vh - 94px)}
+.att-hero{background:linear-gradient(135deg,#0c1a2e 0%,#0a1a12 100%);border-bottom:1px solid var(--brd);padding:24px;display:flex;align-items:center;justify-content:space-between}
+.att-welcome{font-size:20px;font-weight:600;color:#f1f5f9;margin-bottom:4px}
+.att-sub{font-size:13px;color:var(--t2)}
+.att-ticket{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rad);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.att-ticket-icon{font-size:24px}
+.att-status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:20px 24px;border-bottom:1px solid var(--brd)}
+.att-stat{background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);padding:14px;text-align:center}
+.att-stat-val{font-size:22px;font-weight:600;margin-bottom:2px}
+.att-stat-lbl{font-size:10px;color:var(--t3)}
+.att-section{padding:20px 24px;border-bottom:1px solid var(--brd)}
+.att-sec-title{font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:12px}
+.att-quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.att-quick{background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);padding:14px;cursor:pointer;transition:.15s}
+.att-quick:hover{border-color:var(--brd2)}
+.att-quick-icon{font-size:22px;margin-bottom:6px}
+.att-quick-title{font-size:12px;font-weight:500;color:#e2e8f0;margin-bottom:2px}
+.att-quick-val{font-size:11px}
+.att-route-card{background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);padding:14px}
+.att-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.att-step:last-child{margin-bottom:0}
+.att-step-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.att-alert-banner{margin:0 24px 16px;padding:12px 14px;border-radius:var(--rad);border:1px solid;display:flex;align-items:flex-start;gap:10px}
+.sparkline{display:flex;align-items:flex-end;gap:3px;height:34px}
+.spk{border-radius:2px 2px 0 0;min-width:5px;flex:1;transition:height .3s}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:2px}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg1);border:1px solid var(--brd2);border-radius:var(--rad);padding:24px;width:380px;max-width:90vw}
+.modal-title{font-size:15px;font-weight:600;color:#f1f5f9;margin-bottom:16px}
+.form-row{margin-bottom:12px}
+.form-lbl{font-size:11px;color:var(--t3);margin-bottom:5px}
+.form-inp{width:100%;background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rads);padding:8px 12px;color:#e2e8f0;font-size:13px;outline:none;transition:.15s}
+.form-inp:focus{border-color:var(--blu)}
+.form-select{width:100%;background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rads);padding:8px 12px;color:#e2e8f0;font-size:13px;outline:none}
+.modal-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.mbtn-cancel{padding:8px 16px;border-radius:var(--rads);border:1px solid var(--brd);background:transparent;color:var(--t3);font-size:12px;cursor:pointer}
+.mbtn-ok{padding:8px 20px;border-radius:var(--rads);border:none;background:#185fa5;color:white;font-size:12px;font-weight:500;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- MODE BAR -->
+<div class="mode-bar">
+  <div class="mode-logo">
+    <div class="mode-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+    VenueIQ
+  </div>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="mode-admin" onclick="switchMode('admin')">Admin / Ops Panel</button>
+    <button class="mode-btn" id="mode-att" onclick="switchMode('attendee')">Attendee View</button>
+  </div>
+  <div class="mode-right">
+    <div class="live-chip"><div class="livd"></div>System Live</div>
+    <span id="clock-main">--:--:--</span>
+  </div>
+</div>
+
+<!-- ==================== ADMIN PANEL ==================== -->
+<div id="admin-panel">
+  <div class="topbar">
+    <div class="t-logo">
+      <span id="venue-display">Grand Sports Arena</span>
+      <span class="venue-name" id="venue-event-display">· IPL Final · Match Day</span>
+    </div>
+    <div class="t-meta">
+      <span>Expected <b id="hdr-exp">80,000</b></span>
+      <span>Registered <b id="hdr-reg">72,450</b></span>
+      <span>Arrived <b style="color:#4ade80" id="hdr-arr">67,842</b></span>
+      <span>Unregistered <b style="color:#f59e0b" id="hdr-unreg">~4,200</b></span>
+      <span>Cameras <b style="color:#4ade80" id="hdr-cams">12 live</b></span>
+      <span style="color:#4ade80" id="hdr-clock">--:--:--</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="padding:5px 12px;background:var(--bdim);border:1px solid var(--bbrd);border-radius:20px;color:#93c5fd;font-size:11px;cursor:pointer;font-weight:500" onclick="openVenueSettings()">⚙ Venue Settings</div>
+      <div class="em-btn-top" onclick="goPage('alerts')">⚠ Emergency</div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nv active" onclick="goPage('overview')"><div class="nvd" style="background:#4ade80"></div>Overview</div>
+    <div class="nv" onclick="goPage('crowd')"><div class="nvd" style="background:#f59e0b"></div>Crowd Map</div>
+    <div class="nv" onclick="goPage('queues')"><div class="nvd" style="background:#378add"></div>Queue Intelligence</div>
+    <div class="nv" onclick="goPage('navigate')"><div class="nvd" style="background:#a78bfa"></div>Navigation</div>
+    <div class="nv" onclick="goPage('ai')"><div class="nvd" style="background:#2dd4bf"></div>AI Assistant</div>
+    <div class="nv" onclick="goPage('alerts')"><div class="nvd" style="background:#ef4444"></div>Alerts & Coordination</div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="page-overview" class="page active">
+    <div class="pg-title">Command Overview</div>
+    <div class="pg-sub">Real-time venue intelligence — visitor flow, crowd density, and coordination status</div>
+
+    <div class="grid4" style="margin-bottom:24px">
+      <div class="stat"><div class="sv" style="color:#60a5fa" id="ov-exp">80,000</div><div class="sl">Expected visitors</div><div class="ss" style="color:var(--t3)">Pre-event forecast</div></div>
+      <div class="stat"><div class="sv" style="color:#4ade80" id="ov-reg">72,450</div><div class="sl">Registered tickets</div><div class="ss" style="color:#4ade80">90.6% of capacity</div></div>
+      <div class="stat"><div class="sv" style="color:#4ade80" id="ov-arr">67,842</div><div class="sl">Arrived (checked in)</div><div class="ss" style="color:var(--t3)">↑ +342 last 10 min</div></div>
+      <div class="stat"><div class="sv" style="color:#f59e0b" id="ov-unreg">~4,200</div><div class="sl">Unregistered / walk-in</div><div class="ss" style="color:#fde68a">Gate scanner flagged</div></div>
+    </div>
+
+    <div class="grid4" style="margin-bottom:24px">
+      <div class="stat"><div class="sv" style="color:#ef4444">2</div><div class="sl">Critical zones</div><div class="ss" style="color:#fca5a5">North Stand · Food Court</div></div>
+      <div class="stat"><div class="sv" style="color:#4ade80">4.2<span style="font-size:14px;font-weight:400"> min</span></div><div class="sl">Avg queue wait</div><div class="ss" style="color:#4ade80">↓ from 9.1 min baseline</div></div>
+      <div class="stat"><div class="sv" style="color:#4ade80" id="ov-reroutes">1,247</div><div class="sl">AI reroutes issued</div><div class="ss" style="color:var(--t3)">Push notifications sent</div></div>
+      <div class="stat"><div class="sv" style="color:#ef4444" id="ov-em">0</div><div class="sl">Emergency incidents</div><div class="ss" style="color:#4ade80">All clear · No escalations</div></div>
+    </div>
+
+    <div class="grid2" style="margin-bottom:24px">
+      <div class="card">
+        <div class="sec-lbl">Zone density — live</div>
+        <div id="zone-bars-ov"></div>
+      </div>
+      <div class="card">
+        <div class="sec-lbl">Visitor arrival trend — last 30 min</div>
+        <div class="sparkline" id="sparkline-ov" style="margin-bottom:16px"></div>
+        <div class="sec-lbl">Event timeline</div>
+        <div id="event-tl"></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:24px">
+      <div class="sec-lbl">AI predictions — next 15 min</div>
+      <div class="grid3" id="preds-ov"></div>
+    </div>
+  </div>
+
+  <!-- CROWD MAP -->
+  <div id="page-crowd" class="page">
+    <div class="pg-title">Crowd Movement Map</div>
+    <div class="pg-sub">AI heatmap with zone click details · Camera feeds below — add / remove cameras live</div>
+
+    <!-- MAP -->
+    <div style="background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);overflow:hidden;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--brd)">
+        <span style="font-size:11px;color:var(--t3)">Overlays:</span>
+        <div class="map-btn on" onclick="tgl(this,'map-hm')">Heatmap</div>
+        <div class="map-btn on" onclick="tgl(this,'map-ai')">AI Tags</div>
+        <div class="map-btn" onclick="tgl(this,'map-flow')">Flow</div>
+        <div class="map-btn" onclick="tgl(this,'map-zones')">Zones</div>
+        <div style="flex:1"></div>
+        <span style="font-size:11px;color:var(--t3)">Click zone for details · <span id="venue-map-label">Grand Sports Arena</span></span>
+      </div>
+      <svg width="100%" viewBox="0 0 700 360" style="background:#060a0f;display:block">
+        <g opacity=".12" stroke="#1e2a3a" stroke-width="1">
+          <line x1="0" y1="90" x2="700" y2="90"/><line x1="0" y1="180" x2="700" y2="180"/><line x1="0" y1="270" x2="700" y2="270"/>
+          <line x1="175" y1="0" x2="175" y2="360"/><line x1="350" y1="0" x2="350" y2="360"/><line x1="525" y1="0" x2="525" y2="360"/>
+        </g>
+        <g id="map-hm">
+          <ellipse cx="350" cy="46" rx="155" ry="36" fill="#ef4444" opacity=".22"/>
+          <ellipse cx="350" cy="46" rx="85" ry="20" fill="#ef4444" opacity=".28"/>
+          <ellipse cx="190" cy="190" rx="85" ry="65" fill="#f59e0b" opacity=".18"/>
+          <ellipse cx="350" cy="315" rx="115" ry="33" fill="#f59e0b" opacity=".16"/>
+          <ellipse cx="510" cy="190" rx="65" ry="50" fill="#22c55e" opacity=".14"/>
+        </g>
+        <g id="map-ai">
+          <rect x="264" y="18" width="86" height="17" rx="3" fill="#1a0808" stroke="#7f1d1d" stroke-width="1"/>
+          <text x="270" y="30" fill="#f87171" font-size="9" font-weight="600">SURGE RISK 87%</text>
+          <rect x="138" y="172" width="80" height="15" rx="3" fill="#1a1408" stroke="#78350f" stroke-width="1"/>
+          <text x="143" y="183" fill="#fde68a" font-size="9">DENSITY 82%</text>
+          <rect x="460" y="172" width="68" height="15" rx="3" fill="#0a1f12" stroke="#14532d" stroke-width="1"/>
+          <text x="465" y="183" fill="#86efac" font-size="9">CLEAR 38%</text>
+        </g>
+        <g id="map-flow" opacity="0">
+          <defs><marker id="arr" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L6 3L0 6" fill="none" stroke="#378add" stroke-width="1"/></marker></defs>
+          <line x1="350" y1="55" x2="350" y2="120" stroke="#378add" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)" opacity=".7"/>
+          <line x1="190" y1="190" x2="340" y2="190" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)" opacity=".6"/>
+        </g>
+        <g id="map-zones" opacity="0">
+          <rect x="148" y="8" width="404" height="72" rx="5" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <rect x="76" y="96" width="176" height="176" rx="5" fill="none" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="5 3"/>
+          <rect x="448" y="96" width="176" height="176" rx="5" fill="none" stroke="#22c55e" stroke-width="1" stroke-dasharray="5 3"/>
+          <rect x="148" y="280" width="404" height="72" rx="5" fill="none" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="5 3"/>
+        </g>
+        <!-- Pitch -->
+        <rect x="195" y="96" width="310" height="178" rx="8" fill="#1a3a22"/>
+        <rect x="210" y="108" width="280" height="154" rx="5" fill="none" stroke="#2d6b38" stroke-width="1"/>
+        <ellipse cx="350" cy="185" rx="40" ry="40" fill="none" stroke="#2d6b38" stroke-width="1"/>
+        <line x1="195" y1="185" x2="505" y2="185" stroke="#2d6b38" stroke-width="1"/>
+        <!-- Stands -->
+        <rect x="148" y="8" width="404" height="80" rx="8" fill="#ef4444" fill-opacity=".07" stroke="#ef4444" stroke-width=".5" style="cursor:pointer" onclick="zoneClick('North Stand','91%','CRITICAL','Surge detected. Gate A restricted. AI rerouting to East & West gates.','87%')"/>
+        <text x="350" y="36" fill="#ef4444" font-size="12" font-weight="600" text-anchor="middle">North Stand</text>
+        <text x="350" y="54" fill="#f87171" font-size="9" text-anchor="middle">91% · CRITICAL · Click for details</text>
+        <rect x="76" y="96" width="114" height="178" rx="6" fill="#f59e0b" fill-opacity=".06" stroke="#f59e0b" stroke-width=".5" style="cursor:pointer" onclick="zoneClick('West Stand','72%','HIGH','Elevated. Directing overflow to East Stand via concourse B.','54%')"/>
+        <text x="133" y="185" fill="#f59e0b" font-size="10" font-weight="600" text-anchor="middle" transform="rotate(-90 133 185)">West Stand · 72%</text>
+        <rect x="510" y="96" width="114" height="178" rx="6" fill="#22c55e" fill-opacity=".06" stroke="#22c55e" stroke-width=".5" style="cursor:pointer" onclick="zoneClick('East Stand','38%','NORMAL','Comfortable. Accepting overflow. No action needed.','12%')"/>
+        <text x="567" y="185" fill="#4ade80" font-size="10" font-weight="600" text-anchor="middle" transform="rotate(90 567 185)">East Stand · 38%</text>
+        <rect x="148" y="282" width="404" height="72" rx="8" fill="#f59e0b" fill-opacity=".06" stroke="#f59e0b" stroke-width=".5" style="cursor:pointer" onclick="zoneClick('South Stand','68%','MODERATE','Steady. Half-time food surge predicted in 8 min.','42%')"/>
+        <text x="350" y="312" fill="#f59e0b" font-size="12" font-weight="600" text-anchor="middle">South Stand</text>
+        <text x="350" y="330" fill="#fde68a" font-size="9" text-anchor="middle">68% · MODERATE · Click for details</text>
+        <!-- Gates -->
+        <rect x="308" y="0" width="84" height="8" fill="#0c1a2e"/><text x="350" y="7" fill="#60a5fa" font-size="8" text-anchor="middle">GATE A — RESTRICTED</text>
+        <rect x="308" y="352" width="84" height="8" fill="#0a1a08"/><text x="350" y="359" fill="#4ade80" font-size="8" text-anchor="middle">GATE C — OPEN</text>
+        <rect x="0" y="174" width="75" height="22" fill="#0a1a08" rx="3"/><text x="38" y="187" fill="#4ade80" font-size="8" text-anchor="middle">GATE B OPEN</text>
+        <rect x="625" y="174" width="75" height="22" fill="#0a1a08" rx="3"/><text x="663" y="187" fill="#4ade80" font-size="8" text-anchor="middle">GATE D OPEN</text>
+        <text x="692" y="355" fill="#1e2a3a" font-size="7" text-anchor="end">Gemini Vision · live</text>
+      </svg>
+      <div style="display:flex;align-items:center;gap:20px;padding:9px 16px;border-top:1px solid var(--brd);font-size:11px;color:var(--t3)">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block"></span>Critical >85%</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#f59e0b;display:inline-block"></span>High 65–85%</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block"></span>Normal <65%</span>
+        <span style="margin-left:auto">Updated: <span id="map-ts" style="color:var(--t2)">--:--:--</span></span>
+      </div>
+    </div>
+
+    <!-- ZONE DETAIL -->
+    <div class="zdp" id="zdp">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px">
+        <div style="flex:1"><div style="font-size:15px;font-weight:600;color:#f1f5f9;margin-bottom:6px" id="zd-name">—</div><div style="display:flex;gap:7px;margin-bottom:8px"><span id="zd-tag" class="tag">—</span><span id="zd-risk-tag" class="tag tag-a">—</span></div><div style="font-size:13px;color:var(--t2);line-height:1.6" id="zd-desc">—</div></div>
+        <div style="text-align:right;flex-shrink:0"><div style="font-size:34px;font-weight:700;line-height:1" id="zd-pct">—</div><div style="font-size:10px;color:var(--t3)">occupancy</div><div style="font-size:11px;color:var(--t3);margin-top:5px">Surge risk: <span id="zd-surge" style="font-weight:500">—</span></div></div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:var(--gdim);border-radius:6px;border-left:2px solid #16a34a;font-size:12px;color:#4ade80"><span style="font-weight:600;color:#86efac">Gemini AI: </span><span id="zd-ai">—</span></div>
+    </div>
+
+    <!-- CAMERA MANAGEMENT -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:4px">
+      <div class="sec-lbl" style="margin:0;flex:1">Live camera feeds — click to inspect · drag to reorder</div>
+      <button onclick="openAddCam()" style="padding:5px 14px;background:var(--bdim);border:1px solid var(--bbrd);border-radius:20px;color:#93c5fd;font-size:11px;cursor:pointer;font-weight:500;margin-left:12px">+ Add Camera</button>
+    </div>
+    <div class="cam-grid-mgmt" id="cam-grid-mgmt"></div>
+
+    <!-- SELECTED CAM DETAIL -->
+    <div class="cam-detail-panel" id="cam-detail-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:500;color:#e2e8f0" id="cdp-title">—</div>
+        <div style="display:flex;gap:8px">
+          <span id="cdp-status-tag" class="tag">—</span>
+          <span style="font-size:10px;color:var(--t3);align-self:center" id="cdp-id">—</span>
+        </div>
+      </div>
+      <div class="grid4">
+        <div class="stat" style="padding:10px 12px"><div class="sv" style="font-size:20px" id="cdp-persons">—</div><div class="sl">Persons detected</div></div>
+        <div class="stat" style="padding:10px 12px"><div class="sv" style="font-size:20px" id="cdp-density">—</div><div class="sl">Zone density</div></div>
+        <div class="stat" style="padding:10px 12px"><div class="sv" style="font-size:20px" id="cdp-vel">—</div><div class="sl">Crowd velocity</div></div>
+        <div class="stat" style="padding:10px 12px"><div class="sv" style="font-size:20px" id="cdp-surge">—</div><div class="sl">AI prediction</div></div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:var(--gdim);border-radius:5px;border-left:2px solid #16a34a;font-size:12px;color:#4ade80"><span style="font-weight:600">Gemini: </span><span id="cdp-ai">—</span></div>
+    </div>
+  </div>
+
+  <!-- QUEUES -->
+  <div id="page-queues" class="page">
+    <div class="pg-title">Queue Intelligence</div>
+    <div class="pg-sub">Real-time wait time prediction across gates, concessions, restrooms, and facilities</div>
+    <div style="background:var(--bdim);border:1px solid var(--bbrd);border-radius:var(--rad);padding:13px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div class="chat-av">G</div>
+      <div><div style="font-size:12px;font-weight:500;color:#93c5fd;margin-bottom:2px">Gemini Queue Optimizer</div><div style="font-size:13px;color:#cbd5e1">Gate B & D: 2–3 min wait only. Gate A: 13 min — restricted. Half-time surge in 8 min — head to Gate B concessions now for fastest service.</div></div>
+    </div>
+    <div style="margin-bottom:20px"><div class="sec-lbl">Concessions</div><div id="q-concessions"></div></div>
+    <div style="margin-bottom:20px"><div class="sec-lbl">Restrooms & facilities</div><div id="q-facilities"></div></div>
+    <div><div class="sec-lbl">Entry / exit gates</div><div id="q-gates"></div></div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <div id="page-navigate" class="page">
+    <div class="pg-title">Indoor Navigation</div>
+    <div class="pg-sub">AI-optimized crowd-aware routing — updates every 30 seconds</div>
+    <div class="grid2">
+      <div>
+        <div class="sec-lbl">Route to your seat</div>
+        <div style="background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rad);padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:11px;color:var(--t3);margin-bottom:2px">Destination</div><div style="font-size:15px;font-weight:600;color:#f1f5f9">N-Block · Row 12 · Seat 34</div></div>
+          <div style="text-align:right"><div style="font-size:22px;font-weight:600;color:#4ade80">4 min</div><div style="font-size:11px;color:var(--t3)">AI-optimized ETA</div></div>
+        </div>
+        <div style="background:var(--gdim);border:1px solid var(--gbrd);border-radius:var(--rads);padding:9px 13px;margin-bottom:16px;font-size:12px;color:#4ade80">AI saved 3 min by rerouting away from Gate A (89% density)</div>
+        <div id="nav-steps-el" style="padding-left:20px;position:relative"></div>
+        <div style="margin-top:16px"><div class="sec-lbl">Accessibility</div><div style="background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);padding:13px 16px"><div style="font-size:13px;font-weight:500;margin-bottom:8px;color:#e2e8f0">Wheelchair-accessible path</div><div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5">Gate B Lift → Level 2 Ramp → N-Block Elevator (0 min wait)</div><div style="display:flex;flex-direction:column;gap:5px" id="a11y-list"></div></div></div>
+      </div>
+      <div>
+        <div class="sec-lbl">Venue services nearby</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px" id="nav-services"></div>
+        <div class="sec-lbl">Emergency exits</div>
+        <div id="nav-exits"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI ASSISTANT -->
+  <div id="page-ai" class="page">
+    <div class="pg-title">AI Venue Assistant</div>
+    <div class="pg-sub">Powered by Gemini — real-time data on crowds, queues, routes, and event info</div>
+    <div class="chat-outer">
+      <div class="chat-hdr"><div class="chat-av">G</div><div><div style="font-size:13px;font-weight:500;color:#e2e8f0">VenueIQ Assistant</div><div style="font-size:11px;color:#4ade80;display:flex;align-items:center;gap:5px"><div class="livd" style="width:5px;height:5px;background:#4ade80"></div>Live venue data connected</div></div></div>
+      <div class="chat-msgs" id="admin-chat-msgs"><div class="msg-a"><div class="bub bub-a">Hi! I'm your VenueIQ assistant powered by Gemini. I have real-time data on every zone, gate, queue, and route. What do you need?</div><div class="msg-meta">Gemini · just now</div></div></div>
+      <div class="chips" id="admin-chips">
+        <div class="chip" onclick="adminChat('Nearest restroom with no wait?')">Nearest restroom</div>
+        <div class="chip" onclick="adminChat('Which concession has shortest queue?')">Shortest queue</div>
+        <div class="chip" onclick="adminChat('North Stand status?')">North Stand</div>
+        <div class="chip" onclick="adminChat('Half-time surge plan?')">Half-time plan</div>
+        <div class="chip" onclick="adminChat('Parking exit options?')">Parking exits</div>
+      </div>
+      <div class="cinp-row"><input class="cinp" id="admin-chat-inp" placeholder="Ask about queues, crowds, routes, operations…" onkeydown="if(event.key==='Enter')doAdminChat()"><button class="csend" onclick="doAdminChat()">Send</button></div>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div id="page-alerts" class="page">
+    <div class="pg-title">Alerts & Team Coordination</div>
+    <div class="pg-sub">Live incidents, emergency protocols, and team strategy board</div>
+    <div class="grid2" style="align-items:start">
+      <div>
+        <div class="sec-lbl">Active alerts</div>
+        <div id="alerts-list"></div>
+        <div class="sec-lbl" style="margin-top:20px">Emergency protocols</div>
+        <div class="em-panel"><div style="font-size:12px;font-weight:600;color:#fca5a5;margin-bottom:12px;display:flex;align-items:center;gap:6px"><div class="livd" style="background:#ef4444"></div>Emergency Control</div>
+          <div class="em-grid">
+            <div class="ebtn eb-r" onclick="emFire('PA Warning broadcast across all sectors')">PA Warning</div>
+            <div class="ebtn eb-a" onclick="emFire('Gates B & D fully opened — overflow active')">Open Exits</div>
+            <div class="ebtn eb-b" onclick="emFire('QRT dispatched to North Stand — ETA 90s')">Deploy QRT</div>
+            <div class="ebtn eb-g" onclick="emFire('All-clear issued — standard monitoring resumed')">All Clear</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="sec-lbl">Team strategy board</div>
+        <div class="tbrd" id="tbrd-wrap">
+          <div id="team-msgs-el"></div>
+          <div class="tinp-row"><input class="tinp" id="team-inp" placeholder="Post strategy or observation…" onkeydown="if(event.key==='Enter')postTeam()"><button class="tsend" onclick="postTeam()">Post</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ATTENDEE PANEL ==================== -->
+<div id="attendee-panel" style="display:none">
+  <div class="att-page">
+    <div class="att-hero">
+      <div>
+        <div class="att-welcome" id="att-venue-name">Grand Sports Arena</div>
+        <div class="att-sub" id="att-event-name">IPL Final · Match Day · Your seat: N-Block Row 12 Seat 34</div>
+      </div>
+      <div class="att-ticket">
+        <div class="att-ticket-icon">🎫</div>
+        <div>
+          <div style="font-size:12px;font-weight:500;color:#e2e8f0">Ticket #VIQ-2024-8832</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:1px">Gate B · Section N · Checked in</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS STRIP -->
+    <div class="att-status-grid">
+      <div class="att-stat"><div class="att-stat-val" style="color:#4ade80">4.2 min</div><div class="att-stat-lbl">Avg queue near you</div></div>
+      <div class="att-stat"><div class="att-stat-val" style="color:#f59e0b">4 min</div><div class="att-stat-lbl">Walk to your seat</div></div>
+      <div class="att-stat"><div class="att-stat-val" style="color:#60a5fa">8 min</div><div class="att-stat-lbl">To half-time</div></div>
+    </div>
+
+    <!-- ALERT BANNER -->
+    <div style="padding:16px 20px 4px">
+      <div class="att-alert-banner al-warn" style="border-radius:var(--rad)">
+        <div class="alind" style="background:#f59e0b;margin-top:3px"></div>
+        <div><div class="al-t" style="font-size:12px">North Stand is congested (91%) — Gate A restricted</div><div class="al-b" style="font-size:11px">Use Gate B or Gate D. AI has updated your route automatically.</div></div>
+      </div>
+    </div>
+
+    <!-- MY ROUTE -->
+    <div class="att-section">
+      <div class="att-sec-title">My route to seat</div>
+      <div class="att-route-card" id="att-route-card"></div>
+    </div>
+
+    <!-- QUICK INFO -->
+    <div class="att-section">
+      <div class="att-sec-title">Quick info near you</div>
+      <div class="att-quick-grid" id="att-quick-grid"></div>
+    </div>
+
+    <!-- ATTENDEE CHAT -->
+    <div class="att-section">
+      <div class="att-sec-title">Ask VenueIQ</div>
+      <div class="chat-outer" style="max-width:100%">
+        <div class="chat-hdr"><div class="chat-av">G</div><div><div style="font-size:13px;font-weight:500;color:#e2e8f0">VenueIQ for Visitors</div><div style="font-size:11px;color:#4ade80;display:flex;align-items:center;gap:5px"><div class="livd" style="width:5px;height:5px;background:#4ade80"></div>Personalized to your seat & location</div></div></div>
+        <div class="chat-msgs" id="att-chat-msgs" style="height:260px"><div class="msg-a"><div class="bub bub-a">Hi! I know your seat (N-Block Row 12 Seat 34) and current venue conditions. I can guide you to the shortest queues, your seat, restrooms, or anything else!</div><div class="msg-meta">VenueIQ · just now</div></div></div>
+        <div class="chips">
+          <div class="chip" onclick="attChat('Where is the nearest restroom?')">Nearest restroom</div>
+          <div class="chip" onclick="attChat('Best food stall right now?')">Best food stall</div>
+          <div class="chip" onclick="attChat('Guide me to my seat')">Guide to seat</div>
+          <div class="chip" onclick="attChat('What should I do at half-time?')">Half-time plan</div>
+          <div class="chip" onclick="attChat('Is it safe to exit North now?')">Exit safety</div>
+        </div>
+        <div class="cinp-row"><input class="cinp" id="att-chat-inp" placeholder="Ask anything about the venue…" onkeydown="if(event.key==='Enter')doAttChat()"><button class="csend" onclick="doAttChat()">Send</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CAMERA MODAL -->
+<div class="modal-bg" id="add-cam-modal">
+  <div class="modal">
+    <div class="modal-title">Add Live Camera</div>
+    <div class="form-row"><div class="form-lbl">Camera Name / Location</div><input class="form-inp" id="new-cam-name" placeholder="e.g. Gate E Entrance"></div>
+    <div class="form-row"><div class="form-lbl">Zone</div>
+      <select class="form-select" id="new-cam-zone">
+        <option>North Stand</option><option>South Stand</option><option>East Stand</option><option>West Stand</option><option>Food Court</option><option>Gate Area</option><option>Parking</option><option>VIP Lounge</option>
+      </select>
+    </div>
+    <div class="form-row"><div class="form-lbl">Initial Status</div>
+      <select class="form-select" id="new-cam-status">
+        <option value="ok">Normal</option><option value="warn">Warning</option><option value="crit">Critical</option>
+      </select>
+    </div>
+    <div class="form-row"><div class="form-lbl">Starting Density (%)</div><input class="form-inp" id="new-cam-density" type="number" min="0" max="100" value="45"></div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="mbtn-ok" onclick="addCamera()">Add Camera</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.map-btn{padding:4px 12px;border-radius:20px;font-size:11px;border:1px solid var(--brd2);color:var(--t3);background:transparent;cursor:pointer;transition:.15s}
+.map-btn.on{background:var(--bdim);border-color:var(--bbrd);color:#93c5fd}
+</style>
+
+<script>
+// ---- CLOCK ----
+function tick(){
+  const t=new Date().toTimeString().split(' ')[0];
+  ['clock-main','hdr-clock','map-ts'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t});
+}
+setInterval(tick,1000);tick();
+
+// ---- MODE ----
+function switchMode(m){
+  const isAdmin=m==='admin';
+  document.getElementById('admin-panel').style.display=isAdmin?'':'none';
+  document.getElementById('attendee-panel').style.display=isAdmin?'none':'';
+  document.getElementById('mode-admin').classList.toggle('active',isAdmin);
+  document.getElementById('mode-att').classList.toggle('active',!isAdmin);
+}
+
+// ---- ADMIN NAV ----
+const adminPages=['overview','crowd','queues','navigate','ai','alerts'];
+function goPage(id){
+  adminPages.forEach(p=>{document.getElementById('page-'+p).classList.toggle('active',p===id)});
+  document.querySelectorAll('.nv').forEach((el,i)=>el.classList.toggle('active',adminPages[i]===id));
+}
+
+// ---- MAP LAYERS ----
+function tgl(btn,id){
+  btn.classList.toggle('on');
+  const el=document.getElementById(id);
+  if(el)el.style.opacity=btn.classList.contains('on')?'1':'0';
+}
+
+// ---- ZONE CLICK ----
+function zoneClick(name,pct,status,desc,surge){
+  const p=document.getElementById('zdp');p.classList.add('show');
+  document.getElementById('zd-name').textContent=name;
+  document.getElementById('zd-pct').textContent=pct;
+  const cols={CRITICAL:'#ef4444',HIGH:'#f59e0b',MODERATE:'#f59e0b',NORMAL:'#22c55e'};
+  const tcs={CRITICAL:'tag-r',HIGH:'tag-a',MODERATE:'tag-a',NORMAL:'tag-g'};
+  document.getElementById('zd-pct').style.color=cols[status]||'#e2e8f0';
+  const tag=document.getElementById('zd-tag');tag.textContent=status;tag.className='tag '+(tcs[status]||'tag-g');
+  document.getElementById('zd-risk-tag').textContent='Surge risk: '+surge;
+  document.getElementById('zd-surge').textContent=surge;
+  document.getElementById('zd-desc').textContent=desc;
+  document.getElementById('zd-ai').textContent=desc;
+}
+
+// ---- CAMERAS ----
+let cameras=[
+  {id:'CAM-01',name:'Gate A — Main Entrance',zone:'Gate Area',status:'crit',density:89,persons:47,vel:'High',surge:'SURGE',ai:'Restrict incoming flow. Reroute via Gate D.'},
+  {id:'CAM-02',name:'North Stand Upper',zone:'North Stand',status:'crit',density:91,persons:63,vel:'High',surge:'CRITICAL',ai:'Surge detected. Emergency protocol recommended.'},
+  {id:'CAM-03',name:'Food Court Central',zone:'Food Court',status:'warn',density:82,persons:38,vel:'Medium',surge:'HIGH',ai:'Half-time surge imminent. Open backup stalls B3-B6.'},
+  {id:'CAM-04',name:'East Gate Entrance',zone:'East Stand',status:'ok',density:38,persons:18,vel:'Low',surge:'NORMAL',ai:'Clear. Accepting overflow redirects from North.'},
+  {id:'CAM-05',name:'West Corridor',zone:'West Stand',status:'warn',density:72,persons:31,vel:'Medium',surge:'MODERATE',ai:'Monitor. Density rising. Pre-stage staff here.'},
+  {id:'CAM-06',name:'South Stand Lower',zone:'South Stand',status:'ok',density:55,persons:24,vel:'Low',surge:'NORMAL',ai:'Normal. No action required.'},
+  {id:'CAM-07',name:'VIP Entrance',zone:'VIP Lounge',status:'ok',density:40,persons:12,vel:'Low',surge:'NORMAL',ai:'Clear. All VIP lanes operating smoothly.'},
+  {id:'CAM-08',name:'Parking Exit East',zone:'Parking',status:'warn',density:60,persons:28,vel:'Medium',surge:'MODERATE',ai:'Queue forming. Open overflow lane P3.'},
+];
+let selCam=null;
+const scols={crit:'#ef4444',warn:'#f59e0b',ok:'#22c55e'};
+
+function renderCams(){
+  const g=document.getElementById('cam-grid-mgmt');
+  g.innerHTML='';
+  cameras.forEach((c,i)=>{
+    const div=document.createElement('div');
+    div.className='cam-card-m'+(selCam===i?' sel':'');
+    div.innerHTML=`<div class="cam-vis"><svg width="100%" height="100" viewBox="0 0 180 100" preserveAspectRatio="xMidYMid slice">
+      <rect width="180" height="100" fill="#050810"/>
+      <line x1="0" y1="33" x2="180" y2="33" stroke="#0d1117" stroke-width=".5"/>
+      <line x1="0" y1="67" x2="180" y2="67" stroke="#0d1117" stroke-width=".5"/>
+      <line x1="60" y1="0" x2="60" y2="100" stroke="#0d1117" stroke-width=".5"/>
+      <line x1="120" y1="0" x2="120" y2="100" stroke="#0d1117" stroke-width=".5"/>
+      ${c.status==='crit'?`<ellipse cx="90" cy="55" rx="55" ry="40" fill="#ef4444" opacity=".14"/><ellipse cx="90" cy="55" rx="30" ry="22" fill="#ef4444" opacity=".2"/>`:c.status==='warn'?`<ellipse cx="90" cy="55" rx="45" ry="32" fill="#f59e0b" opacity=".13"/><ellipse cx="90" cy="55" rx="24" ry="17" fill="#f59e0b" opacity=".18"/>`:`<ellipse cx="70" cy="60" rx="32" ry="24" fill="#22c55e" opacity=".11"/>`}
+      <circle cx="82" cy="52" r="7" fill="none" stroke="${scols[c.status]}" stroke-width="1.2" stroke-dasharray="2 2"/>
+      <text x="91" y="49" fill="${scols[c.status]}" font-size="7" font-weight="600">${c.density}%</text>
+      <rect x="5" y="5" width="5" height="5" rx="1" fill="#ef4444"/><text x="13" y="12" fill="#f87171" font-size="7" font-weight="600">REC</text>
+    </svg></div>
+    <div class="cam-del-btn" onclick="event.stopPropagation();deleteCam(${i})">×</div>
+    <div class="cam-lbl-bar">
+      <div style="display:flex;align-items:center;gap:5px;overflow:hidden;flex:1"><div class="cam-status-dot" style="background:${scols[c.status]}"></div><span style="font-size:10px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</span></div>
+      <span style="font-size:9px;color:${scols[c.status]};font-weight:600">${c.status.toUpperCase()}</span>
+    </div>`;
+    div.addEventListener('click',()=>selectCam(i));
+    g.appendChild(div);
+  });
+  // Add button
+  const addBtn=document.createElement('div');
+  addBtn.className='add-cam-btn';
+  addBtn.innerHTML=`<div class="add-icon" style="border-color:#378add;color:#93c5fd">+</div><span>Add Camera</span>`;
+  addBtn.onclick=openAddCam;
+  g.appendChild(addBtn);
+  document.getElementById('hdr-cams').textContent=cameras.length+' live';
+}
+
+function selectCam(i){
+  selCam=i;
+  const c=cameras[i];
+  renderCams();
+  const p=document.getElementById('cam-detail-panel');p.classList.add('show');
+  document.getElementById('cdp-title').textContent=c.name+' · '+c.zone;
+  document.getElementById('cdp-id').textContent=c.id;
+  const stag=document.getElementById('cdp-status-tag');
+  stag.textContent={crit:'CRITICAL',warn:'WARNING',ok:'NORMAL'}[c.status];
+  stag.className='tag '+{crit:'tag-r',warn:'tag-a',ok:'tag-g'}[c.status];
+  const vc={crit:scols.crit,warn:scols.warn,ok:scols.ok};
+  document.getElementById('cdp-persons').textContent=c.persons;document.getElementById('cdp-persons').style.color=vc[c.status];
+  document.getElementById('cdp-density').textContent=c.density+'%';document.getElementById('cdp-density').style.color=vc[c.status];
+  document.getElementById('cdp-vel').textContent=c.vel;document.getElementById('cdp-vel').style.color=c.vel==='High'?scols.crit:c.vel==='Medium'?scols.warn:scols.ok;
+  document.getElementById('cdp-surge').textContent=c.surge;document.getElementById('cdp-surge').style.color=vc[c.status];
+  document.getElementById('cdp-ai').textContent=c.ai;
+}
+
+function deleteCam(i){
+  cameras.splice(i,1);
+  if(selCam===i){selCam=null;document.getElementById('cam-detail-panel').classList.remove('show')}
+  else if(selCam>i)selCam--;
+  renderCams();
+}
+
+function openAddCam(){document.getElementById('add-cam-modal').classList.add('open')}
+function closeModal(){document.getElementById('add-cam-modal').classList.remove('open')}
+let camCounter=9;
+function addCamera(){
+  const name=document.getElementById('new-cam-name').value.trim()||'New Camera';
+  const zone=document.getElementById('new-cam-zone').value;
+  const status=document.getElementById('new-cam-status').value;
+  const density=parseInt(document.getElementById('new-cam-density').value)||45;
+  const vel=density>75?'High':density>50?'Medium':'Low';
+  cameras.push({id:'CAM-'+String(camCounter).padStart(2,'0'),name,zone,status,density,persons:Math.round(density*0.7),vel,surge:status==='crit'?'CRITICAL':status==='warn'?'HIGH':'NORMAL',ai:'Gemini initializing analysis for this feed…'});
+  camCounter++;
+  closeModal();
+  renderCams();
+  document.getElementById('new-cam-name').value='';
+}
+renderCams();
+
+// ---- ZONE BARS ----
+const zoneData=[
+  {name:'North Stand',pct:91,col:'#ef4444'},
+  {name:'Food Court',pct:82,col:'#f59e0b'},
+  {name:'West Stand',pct:72,col:'#f59e0b'},
+  {name:'South Stand',pct:68,col:'#f59e0b'},
+  {name:'East Stand',pct:38,col:'#22c55e'},
+  {name:'VIP Lounge',pct:40,col:'#22c55e'},
+];
+const zbEl=document.getElementById('zone-bars-ov');
+if(zbEl)zoneData.forEach(z=>{zbEl.innerHTML+=`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:#e2e8f0">${z.name}</span><span style="color:${z.col};font-weight:500">${z.pct}%</span></div><div style="background:var(--brd);border-radius:3px;height:5px;overflow:hidden"><div style="width:${z.pct}%;height:5px;border-radius:3px;background:${z.col}"></div></div></div>`});
+
+// ---- SPARKLINE ----
+const spData=[38,45,54,61,67,72,70,78,82,87,91,86,89,91,88];
+const spEl=document.getElementById('sparkline-ov');
+if(spEl)spData.forEach(v=>{const b=document.createElement('div');b.className='spk';b.style.cssText=`height:${Math.round(v/100*32)}px;background:${v>80?'#ef4444':v>60?'#f59e0b':'#22c55e'}`;spEl.appendChild(b)});
+
+// ---- EVENT TIMELINE ----
+const evts=[{time:'19:30',lbl:'Match begins',s:'done'},{time:'20:15',lbl:'Half-time (now)',s:'active'},{time:'20:30',lbl:'Second half',s:'up'},{time:'22:00',lbl:'Post-match exit',s:'up'}];
+const etEl=document.getElementById('event-tl');
+if(etEl)evts.forEach(e=>{const col=e.s==='done'?'#4ade80':e.s==='active'?'#60a5fa':'#475569';const bg=e.s==='done'?'var(--gdim)':e.s==='active'?'var(--bdim)':'var(--bg3)';etEl.innerHTML+=`<div style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:${bg};border-radius:5px;margin-bottom:6px;border:1px solid var(--brd)"><div style="width:6px;height:6px;border-radius:50%;background:${col};flex-shrink:0${e.s==='active'?';animation:blink .8s infinite':''}"></div><div style="flex:1;font-size:12px;color:#e2e8f0;font-weight:${e.s==='active'?500:400}">${e.lbl}</div><div style="font-size:11px;color:#475569">${e.time}</div></div>`});
+
+// ---- PREDICTIONS ----
+const preds=[
+  {zone:'North Stand',cur:91,fut:75,dir:-1,col:'#ef4444',ai:'Rerouting active — density dropping as Gate D opened.'},
+  {zone:'Food Court',cur:82,fut:94,dir:1,col:'#f59e0b',ai:'Half-time surge in 8 min. Open backup stalls B3–B6 now.'},
+  {zone:'East Stand',cur:38,fut:55,dir:1,col:'#22c55e',ai:'Comfortable. No action needed — absorbing overflow.'},
+];
+const povEl=document.getElementById('preds-ov');
+if(povEl)preds.forEach(p=>{povEl.innerHTML+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div style="font-size:13px;font-weight:500;color:#e2e8f0">${p.zone}</div><div style="text-align:right"><div style="font-size:20px;font-weight:600;color:${p.col}">${p.cur}%</div><div style="font-size:10px;color:var(--t3)">now</div></div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:11px;color:var(--t3)">→15 min:</span><span style="font-size:14px;font-weight:500;color:${p.dir>0?'#f87171':'#4ade80'}">${p.fut}%</span><span style="font-size:11px;font-weight:600;color:${p.dir>0?'#f87171':'#4ade80'}">${p.dir>0?'↑':'↓'}${Math.abs(p.fut-p.cur)}%</span></div><div style="background:var(--brd);border-radius:3px;height:4px;overflow:hidden;margin-bottom:9px"><div style="width:${p.fut}%;height:4px;border-radius:3px;background:${p.col}"></div></div><div style="font-size:11px;color:#4ade80;padding:5px 9px;background:var(--gdim);border-radius:5px;border-left:2px solid #16a34a;line-height:1.5">${p.ai}</div></div>`});
+
+// ---- QUEUES ----
+const qdata={
+  concessions:[
+    {name:'Gate A Concessions',ico:'🍔',pct:91,wait:13,col:'#ef4444',tip:'Use Gate B — 2 min wait'},
+    {name:'Gate B Concessions',ico:'🥤',pct:28,wait:2,col:'#22c55e',tip:'Recommended now'},
+    {name:'Food Court A',ico:'🍕',pct:82,wait:10,col:'#f59e0b',tip:'Backup stalls opening soon'},
+    {name:'VIP Lounge Bar',ico:'🍷',pct:40,wait:3,col:'#22c55e',tip:'Low load — fast service'},
+  ],
+  facilities:[
+    {name:'Restroom Block N1',ico:'🚻',pct:80,wait:5,col:'#f59e0b',tip:'Try Block W2 — 0 min'},
+    {name:'Restroom Block W2',ico:'🚻',pct:22,wait:0,col:'#22c55e',tip:'Best option right now'},
+    {name:'Medical Bay M1',ico:'🏥',pct:10,wait:0,col:'#22c55e',tip:'Open · Ground floor Gate B'},
+    {name:'Merchandise Store',ico:'👕',pct:65,wait:7,col:'#f59e0b',tip:'Moderate — peak after match'},
+  ],
+  gates:[
+    {name:'Gate A — Main',ico:'🚪',pct:89,wait:'RESTRICTED',col:'#ef4444',tip:'AI-restricted — surge'},
+    {name:'Gate B — West',ico:'🚪',pct:35,wait:'Open',col:'#22c55e',tip:'Recommended entry/exit'},
+    {name:'Gate C — South',ico:'🚪',pct:58,wait:'2 min',col:'#22c55e',tip:'Normal flow'},
+    {name:'Gate D — East',ico:'🚪',pct:30,wait:'Open',col:'#22c55e',tip:'Overflow gate — now open'},
+  ]
+};
+function renderQ(id,data){
+  const el=document.getElementById(id);if(!el)return;
+  data.forEach(q=>{el.innerHTML+=`<div class="qrow"><div class="qico" style="background:${q.col}15">${q.ico}</div><div class="qinfo"><div class="qname">${q.name}</div><div class="qsub">${q.pct}% occupancy</div></div><div class="qbar-w"><div class="qbar-bg"><div class="qbar-f" style="width:${Math.min(q.pct,100)}%;background:${q.col}"></div></div><div class="qwait" style="color:${q.col}">${q.wait}${typeof q.wait==='number'?' min':''}</div><div class="qwlbl">wait</div></div><div class="qtip">${q.tip}</div></div>`});
+}
+renderQ('q-concessions',qdata.concessions);
+renderQ('q-facilities',qdata.facilities);
+renderQ('q-gates',qdata.gates);
+
+// ---- NAVIGATION ----
+const steps=[
+  {t:'Current location',s:'Concourse M, Gate A area',st:'done'},
+  {t:'Head to West Corridor',s:'Avoid North Gate — 89% density. AI rerouting active.',st:'done'},
+  {t:'West Elevator → Level 3',s:'Accessible · 0 min wait · Green floor markers',st:'active'},
+  {t:'Follow N-Block signage',s:'AI-guided green arrows on floor panels',st:'up'},
+  {t:'N-Block · Row 12 · Seat 34',s:'Estimated arrival: 4 minutes',st:'up'},
+];
+const nsEl=document.getElementById('nav-steps-el');
+if(nsEl)steps.forEach((s,i)=>{
+  const col=s.st==='done'?'#185fa5':s.st==='active'?'#1d9e75':'#1e2a3a';
+  const tc=s.st==='up'?'#64748b':'#e2e8f0';
+  nsEl.innerHTML+=`<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:${i<steps.length-1?'16':'0'}px;position:relative">${i<steps.length-1?`<div style="position:absolute;left:5px;top:14px;width:1px;height:calc(100% + 6px);background:var(--brd)"></div>`:''}<div style="width:11px;height:11px;border-radius:50%;background:${col};flex-shrink:0;margin-top:2px;${s.st==='active'?'animation:blink .8s infinite;':''}border:2px solid ${col}"></div><div><div style="font-size:13px;font-weight:500;color:${tc};margin-bottom:2px">${s.t}</div><div style="font-size:11px;color:var(--t3);line-height:1.4">${s.s}</div></div></div>`;
+});
+const a11y=document.getElementById('a11y-list');
+if(a11y)['Elevator operational — 0 min wait','Tactile floor paving active','Audio guidance available'].forEach(t=>{a11y.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#86efac"><div style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0"></div>${t}</div>`});
+const svcs=[{ico:'🚻',n:'Restroom W2',m:'0 min · Level 1'},{ico:'🏥',n:'Medical Bay',m:'Open · Gate B'},{ico:'🍔',n:'Gate B Food',m:'2 min wait'},{ico:'💳',n:'ATM Zone A',m:'No queue'},{ico:'🔍',n:'Lost & Found',m:'Gate B Office'},{ico:'🚗',n:'Parking Exit E',m:'6 min wait'}];
+const nsvc=document.getElementById('nav-services');
+if(nsvc)svcs.forEach(s=>{nsvc.innerHTML+=`<div style="background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rads);padding:11px 13px;cursor:pointer;transition:.15s"><div style="font-size:18px;margin-bottom:5px">${s.ico}</div><div style="font-size:12px;font-weight:500;margin-bottom:2px;color:#e2e8f0">${s.n}</div><div style="font-size:11px;color:var(--t3)">${s.m}</div></div>`});
+const exits=[{g:'Gate B',d:'West · 1 min',ok:true},{g:'Gate D',d:'East · 2 min',ok:true},{g:'Gate C',d:'South · 3 min',ok:true},{g:'Gate A',d:'North · RESTRICTED',ok:false}];
+const nex=document.getElementById('nav-exits');
+if(nex)exits.forEach(e=>{nex.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 13px;background:${e.ok?'var(--gdim)':'var(--rdim)'};border:1px solid ${e.ok?'var(--gbrd)':'var(--rbrd)'};border-radius:var(--rads);margin-bottom:7px"><div style="width:7px;height:7px;border-radius:50%;background:${e.ok?'#22c55e':'#ef4444'};flex-shrink:0"></div><div style="flex:1"><div style="font-size:13px;font-weight:500;color:#e2e8f0">${e.g}</div><div style="font-size:11px;color:var(--t3)">${e.d}</div></div><span class="tag ${e.ok?'tag-g':'tag-r'}">${e.ok?'Open':'Restricted'}</span></div>`});
+
+// ---- ALERTS ----
+const alertsInit=[
+  {type:'crit',title:'North Stand — 91% density',body:'Gemini surge alert: restrict Gate A incoming flow. Rerouting to Gate D.'},
+  {type:'warn',title:'Food Court — half-time surge predicted',body:'34% increase expected in 8 min. Open backup stalls B3–B6 immediately.'},
+  {type:'info',title:'Gate D overflow opened successfully',body:'Rerouting effective — North Stand density curve flattening.'},
+  {type:'ok',title:'Medical Bay — all clear',body:'No incidents reported. Staff at full strength.'},
+];
+const al=document.getElementById('alerts-list');
+const alcc={crit:'al-crit',warn:'al-warn',info:'al-info',ok:'al-ok'};
+const aldc={crit:'#ef4444',warn:'#f59e0b',info:'#60a5fa',ok:'#22c55e'};
+if(al)alertsInit.forEach(a=>{al.innerHTML+=`<div class="alcard ${alcc[a.type]}"><div class="alind" style="background:${aldc[a.type]}"></div><div><div class="al-t">${a.title}</div><div class="al-b">${a.body}</div><div class="al-time">Just now</div></div></div>`});
+function emFire(msg){
+  const al=document.getElementById('alerts-list');
+  const d=document.createElement('div');d.className='alcard al-warn';
+  d.innerHTML=`<div class="alind" style="background:#f59e0b"></div><div><div class="al-t">Protocol activated</div><div class="al-b">${msg}</div><div class="al-time">Just now</div></div>`;
+  al.prepend(d);
+}
+
+// ---- TEAM BOARD ----
+const tmInit=[
+  {init:'RK',col:'#185fa5',name:'Rahul K — Ops',text:'Open Gate D now — North filling fast',ai:'Confirmed. Gate D opened. 1,200+ rerouted.'},
+  {init:'SM',col:'#1d9e75',name:'Sunita M — F&B',text:'Deploy 3 more staff to Food Court before half-time',ai:'Good call. Backup stalls B3-B6 activating in 2 min.'},
+];
+const tmEl=document.getElementById('team-msgs-el');
+if(tmEl)tmInit.forEach(t=>{tmEl.innerHTML+=`<div class="tmsg"><div class="tav" style="background:${t.col}">${t.init}</div><div style="flex:1"><div class="tnm">${t.name}</div><div class="ttxt">${t.text}</div><div class="tai">AI: ${t.ai}</div></div></div>`});
+const tmAI=['Strategy logged. Gemini modeling now — update in 30s.','Confirmed. Pre-staging resources at flagged zones.','Acknowledged. All teams notified. Monitoring impact.','Good observation. Deploying staff immediately.','Running simulation. Results in 45 seconds.'];
+let tmCount=2;
+const tmCols=['#534ab7','#993c1d','#185fa5','#0f6e56','#72243e'];
+function postTeam(){
+  const inp=document.getElementById('team-inp');const v=inp.value.trim();if(!v)return;
+  const tmEl=document.getElementById('team-msgs-el');
+  const d=document.createElement('div');d.className='tmsg';
+  const col=tmCols[tmCount%tmCols.length];const rid='tr-'+tmCount;
+  d.innerHTML=`<div class="tav" style="background:${col}">YO</div><div style="flex:1"><div class="tnm">You</div><div class="ttxt">${v}</div><div class="tai" id="${rid}">Gemini processing…</div></div>`;
+  tmEl.appendChild(d);tmEl.scrollTop=tmEl.scrollHeight;inp.value='';
+  const rc=tmCount;setTimeout(()=>{const r=document.getElementById('tr-'+rc);if(r)r.textContent='AI: '+tmAI[rc%tmAI.length]},1300);
+  tmCount++;
+}
+
+// ---- CHAT ----
+const aiReplies={
+  restroom:'Restroom Block W2 (Level 1) has 0 min wait — only 22% occupancy. 2 min walk via West Corridor from Gate A.',
+  food:'Gate B Concessions: 2 min wait only. vs 13 min at Gate A. Note: half-time rush in 8 min — go now!',
+  seat:'From Gate A → West Corridor (avoid North, 89%) → West Elevator Level 3 → Green N-Block markers → Seat 34. ETA 4 min.',
+  north:'North Stand at 91% — CRITICAL. Gate A restricted. East Stand is comfortable at 38% — use Gate D.',
+  half:'Half-time in 8 min. Predicted 34% surge to concessions. Go to Gate B Concessions and Restroom W2 now to beat the rush.',
+  parking:'East Parking: 6 min wait — recommended. West Parking: 14 min. AI routing traffic to staggered exits post-match.',
+  def:'Live data: North Stand congested (91%), Gate A restricted. East/West facilities clear. Where can I guide you?',
+};
+function getReply(m,isAtt){
+  const ml=m.toLowerCase();
+  if(ml.includes('restroom')||ml.includes('toilet')||ml.includes('bathroom'))return aiReplies.restroom;
+  if(ml.includes('food')||ml.includes('eat')||ml.includes('stall')||ml.includes('queue')||ml.includes('concession'))return aiReplies.food;
+  if(ml.includes('seat')||ml.includes('route')||ml.includes('navigate')||ml.includes('guide'))return aiReplies.seat;
+  if(ml.includes('north'))return aiReplies.north;
+  if(ml.includes('half')||ml.includes('plan'))return aiReplies.half;
+  if(ml.includes('park'))return aiReplies.parking;
+  return aiReplies.def;
+}
+function addChatMsg(containerId,text,isUser){
+  const c=document.getElementById(containerId);
+  const d=document.createElement('div');d.className=isUser?'msg-u':'msg-a';
+  d.innerHTML=`<div class="bub ${isUser?'bub-u':'bub-a'}">${text}</div><div class="msg-meta">${isUser?'You':'Gemini · just now'}</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function typingMsg(containerId){
+  const c=document.getElementById(containerId);
+  const d=document.createElement('div');d.className='msg-a';d.id='typing-'+containerId;
+  d.innerHTML=`<div class="bub bub-a" style="color:var(--t3);font-style:italic">Gemini analyzing live data…</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function doAdminChat(){
+  const inp=document.getElementById('admin-chat-inp');const v=inp.value.trim();if(!v)return;
+  addChatMsg('admin-chat-msgs',v,true);inp.value='';typingMsg('admin-chat-msgs');
+  setTimeout(()=>{const t=document.getElementById('typing-admin-chat-msgs');if(t)t.remove();addChatMsg('admin-chat-msgs',getReply(v),false)},1300);
+}
+function adminChat(txt){document.getElementById('admin-chat-inp').value=txt;doAdminChat()}
+function doAttChat(){
+  const inp=document.getElementById('att-chat-inp');const v=inp.value.trim();if(!v)return;
+  addChatMsg('att-chat-msgs',v,true);inp.value='';typingMsg('att-chat-msgs');
+  setTimeout(()=>{const t=document.getElementById('typing-att-chat-msgs');if(t)t.remove();addChatMsg('att-chat-msgs',getReply(v,true),false)},1300);
+}
+function attChat(txt){document.getElementById('att-chat-inp').value=txt;doAttChat()}
+
+// ---- ATTENDEE PANEL ----
+const attRoute=document.getElementById('att-route-card');
+if(attRoute){
+  const aSteps=[{ico:'📍',t:'You are here',s:'Gate B, Level 1',col:'#4ade80'},{ico:'🚶',t:'Head to West Elevator',s:'Follow green floor arrows — 1 min',col:'#60a5fa'},{ico:'🛗',t:'Elevator to Level 3',s:'Accessible · 0 min wait',col:'#a78bfa'},{ico:'🪑',t:'N-Block · Row 12 · Seat 34',s:'AI-optimized · 4 min total',col:'#4ade80'}];
+  aSteps.forEach((s,i)=>{attRoute.innerHTML+=`<div class="att-step"><div class="att-step-dot" style="background:${s.col}"></div><div><div style="font-size:13px;font-weight:500;color:#e2e8f0;margin-bottom:1px">${s.t}</div><div style="font-size:11px;color:var(--t3)">${s.s}</div></div></div>`});
+}
+const aqg=document.getElementById('att-quick-grid');
+if(aqg){
+  [{ico:'🚻',t:'Nearest restroom',v:'Block W2 · 0 min wait',vc:'#4ade80'},{ico:'🍔',t:'Shortest food queue',v:'Gate B · 2 min wait',vc:'#4ade80'},{ico:'🏥',t:'Medical bay',v:'Gate B Ground Floor · Open',vc:'#4ade80'},{ico:'🚪',t:'Exit options',v:'Gate B or D recommended',vc:'#4ade80'}].forEach(q=>{aqg.innerHTML+=`<div class="att-quick"><div class="att-quick-icon">${q.ico}</div><div class="att-quick-title">${q.t}</div><div class="att-quick-val" style="color:${q.vc}">${q.v}</div></div>`});
+}
+
+// ---- LIVE KPI UPDATES ----
+let arrBase=67842,rerBase=1247;
+setInterval(()=>{
+  arrBase+=Math.floor(Math.random()*4);rerBase+=Math.floor(Math.random()*3);
+  ['ov-arr','hdr-arr'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=arrBase.toLocaleString()});
+  const r=document.getElementById('ov-reroutes');if(r)r.textContent=rerBase.toLocaleString();
+  ['hdr-att'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=arrBase.toLocaleString()});
+},3500);
+
+// ---- VENUE SETTINGS ----
+let venueConfig={name:'Grand Sports Arena',event:'IPL Final · Match Day',capacity:80000,reg:72450,walkin:4200};
+function openVenueSettings(){
+  document.getElementById('vs-name').value=venueConfig.name;
+  document.getElementById('vs-event').value=venueConfig.event;
+  document.getElementById('vs-capacity').value=venueConfig.capacity;
+  document.getElementById('vs-reg').value=venueConfig.reg;
+  document.getElementById('vs-walkin').value=venueConfig.walkin;
+  document.getElementById('venue-settings-modal').classList.add('open');
+}
+function applyVenueSettings(){
+  venueConfig.name=document.getElementById('vs-name').value||venueConfig.name;
+  venueConfig.event=document.getElementById('vs-event').value||venueConfig.event;
+  venueConfig.capacity=parseInt(document.getElementById('vs-capacity').value)||venueConfig.capacity;
+  venueConfig.reg=parseInt(document.getElementById('vs-reg').value)||venueConfig.reg;
+  venueConfig.walkin=parseInt(document.getElementById('vs-walkin').value)||venueConfig.walkin;
+  // Update all display points
+  ['venue-display','venue-map-label'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=venueConfig.name});
+  const an=document.getElementById('att-venue-name');if(an)an.textContent=venueConfig.name;
+  const ae=document.getElementById('att-event-name');if(ae)ae.textContent=venueConfig.event+' · Your seat: N-Block Row 12 Seat 34';
+  const ve=document.getElementById('venue-event-display');if(ve)ve.textContent='· '+venueConfig.event;
+  // Update KPI
+  const expEl=document.getElementById('ov-exp');if(expEl)expEl.textContent=venueConfig.capacity.toLocaleString();
+  const regEl=document.getElementById('ov-reg');if(regEl)regEl.textContent=venueConfig.reg.toLocaleString();
+  const unEl=document.getElementById('ov-unreg');if(unEl)unEl.textContent='~'+venueConfig.walkin.toLocaleString();
+  const hExp=document.getElementById('hdr-exp');if(hExp)hExp.textContent=venueConfig.capacity.toLocaleString();
+  const hReg=document.getElementById('hdr-reg');if(hReg)hReg.textContent=venueConfig.reg.toLocaleString();
+  const hUnreg=document.getElementById('hdr-unreg');if(hUnreg)hUnreg.textContent='~'+venueConfig.walkin.toLocaleString();
+  document.getElementById('venue-settings-modal').classList.remove('open');
+}
+// init display
+['venue-display','venue-map-label'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=venueConfig.name});
+
+// ---- CAMERA LIVE PULSE (density jitter every 4s) ----
+setInterval(()=>{
+  cameras.forEach((c,i)=>{
+    const delta=(Math.random()*4)-1.5;
+    c.density=Math.min(99,Math.max(5,Math.round(c.density+delta)));
+    c.persons=Math.round(c.density*0.65);
+    if(c.density>85)c.status='crit';
+    else if(c.density>60)c.status='warn';
+    else c.status='ok';
+  });
+  renderCams();
+  if(selCam!==null)selectCam(selCam);
+  // update zone bars
+  const zb=document.getElementById('zone-bars-ov');
+  if(zb){
+    zb.querySelectorAll('[data-zone-bar]').forEach(el=>{
+      const z=zoneData.find(z=>z.name===el.dataset.zoneName);
+      if(z){const nd=Math.min(99,Math.max(5,z.pct+Math.round((Math.random()*3)-1)));z.pct=nd;el.style.width=nd+'%';}
+    });
+  }
+},4000);
+
+// ---- ATTENDEE: SCHEDULE SECTION ----
+const attScheduleSection=document.getElementById('att-event-name');
+// Build attendee nav tabs
+const attPage=document.querySelector('.att-page');
+if(attPage){
+  // Insert schedule section before the chat section
+  const chatSection=attPage.querySelector('.att-section:last-child');
+  if(chatSection){
+    const schedDiv=document.createElement('div');
+    schedDiv.className='att-section';
+    schedDiv.innerHTML=`
+      <div class="att-sec-title">Today's event schedule</div>
+      <div id="att-schedule"></div>
+    `;
+    attPage.insertBefore(schedDiv,chatSection);
+    const sched=[
+      {time:'19:00',lbl:'Gates open',status:'done',ico:'🚪'},
+      {time:'19:30',lbl:'Match begins — Toss & Lineup',status:'done',ico:'🏏'},
+      {time:'20:15',lbl:'Half-time (now) — 15 min break',status:'active',ico:'⏸'},
+      {time:'20:30',lbl:'Second half kicks off',status:'up',ico:'▶'},
+      {time:'22:00',lbl:'Match ends — post-match ceremony',status:'up',ico:'🏆'},
+      {time:'22:30',lbl:'Staggered exit begins',status:'up',ico:'🚶'},
+    ];
+    const sc=document.getElementById('att-schedule');
+    if(sc)sched.forEach(s=>{
+      const col=s.status==='done'?'#4ade80':s.status==='active'?'#60a5fa':'#475569';
+      const bg=s.status==='done'?'var(--gdim)':s.status==='active'?'var(--bdim)':'var(--bg2)';
+      sc.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 13px;background:${bg};border-radius:7px;margin-bottom:7px;border:1px solid var(--brd)">
+        <span style="font-size:16px">${s.ico}</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:${s.status==='active'?'600':'400'};color:${s.status==='up'?'#475569':'#e2e8f0'}">${s.lbl}</div></div>
+        <div style="font-size:11px;color:${col};font-weight:500">${s.time}</div>
+        ${s.status==='active'?`<div class="livd" style="background:#60a5fa"></div>`:''}
+      </div>`;
+    });
+  }
+
+  // Announcements section
+  const announceDiv=document.createElement('div');
+  announceDiv.className='att-section';
+  announceDiv.innerHTML=`
+    <div class="att-sec-title">Venue announcements</div>
+    <div id="att-announces"></div>
+  `;
+  attPage.insertBefore(announceDiv,chatSection);
+  const announces=[
+    {ico:'🚨',msg:'Gate A is currently restricted — please use Gate B or Gate D',col:'#f59e0b',dim:'var(--adim)',brd:'var(--abrd)'},
+    {ico:'🍔',msg:'Half-time special: 20% off at Gate B Concessions for next 15 min',col:'#4ade80',dim:'var(--gdim)',brd:'var(--gbrd)'},
+    {ico:'🎵',msg:'Live music at South Plaza during half-time break',col:'#a78bfa',dim:'#1a1230',brd:'#4c3a8a'},
+    {ico:'🚗',msg:'Parking: East lot recommended for fastest exit post-match',col:'#60a5fa',dim:'var(--bdim)',brd:'var(--bbrd)'},
+  ];
+  const ann=document.getElementById('att-announces');
+  if(ann)announces.forEach(a=>{
+    ann.innerHTML+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 13px;background:${a.dim};border:1px solid ${a.brd};border-radius:var(--rads);margin-bottom:7px">
+      <span style="font-size:16px;flex-shrink:0">${a.ico}</span>
+      <span style="font-size:12px;color:#e2e8f0;line-height:1.5">${a.msg}</span>
+    </div>`;
+  });
+}
+
+// ---- INCIDENT COUNTER (increments on em actions) ----
+let incidentCount=0;
+const origEmFire=emFire;
+window.emFire=function(msg){
+  origEmFire(msg);
+  if(!msg.toLowerCase().includes('all-clear')){
+    incidentCount++;
+    const el=document.getElementById('ov-em');
+    if(el){el.textContent=incidentCount;el.style.color=incidentCount>0?'#ef4444':'#4ade80';}
+  } else {
+    const el=document.getElementById('ov-em');
+    if(el){el.textContent='0';el.style.color='#4ade80';}
+    incidentCount=0;
+  }
+};
+
+// ---- CLOSE MODALS ON BG CLICK ----
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open')});
+});
+
+// ---- ATTENDEE: FEEDBACK BUTTON ----
+const attHero=document.querySelector('.att-hero');
+if(attHero){
+  const fb=document.createElement('div');
+  fb.style.cssText='padding:16px 20px;border-top:1px solid var(--brd)';
+  fb.innerHTML=`<div style="display:flex;gap:10px">
+    <button onclick="this.textContent='👍 Thanks!';this.style.background='var(--gdim)';this.style.borderColor='var(--gbrd)';this.style.color='#4ade80'" style="flex:1;padding:10px;background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rads);color:var(--t2);font-size:13px;cursor:pointer;transition:.15s">👍 Experience good</button>
+    <button onclick="showFeedback()" style="flex:1;padding:10px;background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rads);color:var(--t2);font-size:13px;cursor:pointer;transition:.15s">📝 Report issue</button>
+  </div>`;
+  document.querySelector('.att-page').appendChild(fb);
+}
+function showFeedback(){
+  const el=document.querySelector('.att-page');
+  const existing=document.getElementById('fb-form');
+  if(existing){existing.remove();return;}
+  const fd=document.createElement('div');
+  fd.id='fb-form';
+  fd.style.cssText='padding:0 20px 20px';
+  fd.innerHTML=`<div style="background:var(--bg1);border:1px solid var(--brd);border-radius:var(--rad);overflow:hidden">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--brd);font-size:12px;font-weight:500;color:#e2e8f0">Report an issue</div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <select class="form-select" id="fb-type" style="background:var(--bg2)"><option>Crowd / Safety concern</option><option>Queue / wait time issue</option><option>Navigation unclear</option><option>Facility problem</option><option>Other</option></select>
+      <textarea style="background:var(--bg2);border:1px solid var(--brd);border-radius:var(--rads);padding:8px 12px;color:#e2e8f0;font-size:12px;resize:none;outline:none;height:70px" placeholder="Describe the issue…" id="fb-text"></textarea>
+      <button onclick="submitFeedback()" style="padding:8px;background:#185fa5;border:none;border-radius:var(--rads);color:white;font-size:12px;font-weight:500;cursor:pointer">Submit Report</button>
+    </div>
+  </div>`;
+  el.appendChild(fd);
+}
+function submitFeedback(){
+  const type=document.getElementById('fb-type')?.value||'Issue';
+  const text=document.getElementById('fb-text')?.value||'';
+  const fd=document.getElementById('fb-form');
+  if(fd)fd.innerHTML=`<div style="background:var(--gdim);border:1px solid var(--gbrd);border-radius:var(--rad);padding:12px 16px;font-size:12px;color:#4ade80">✓ Report submitted — venue team notified. Thank you!</div>`;
+  // also push to admin alerts
+  const al=document.getElementById('alerts-list');
+  if(al){
+    const d=document.createElement('div');d.className='alcard al-info';
+    d.innerHTML=`<div class="alind" style="background:#60a5fa"></div><div><div class="al-t">Attendee report: ${type}</div><div class="al-b">${text||'No description provided'}</div><div class="al-time">Just now · From attendee app</div></div>`;
+    al.prepend(d);
+  }
+}
+
+// ---- SMOOTH SPARKLINE ANIMATION ----
+const spEl2=document.getElementById('sparkline-ov');
+if(spEl2){
+  setInterval(()=>{
+    const bars=spEl2.querySelectorAll('.spk');
+    bars.forEach(b=>{
+      const cur=parseInt(b.style.height)||20;
+      const nxt=Math.min(36,Math.max(4,cur+(Math.round(Math.random()*4)-1)));
+      b.style.height=nxt+'px';
+      b.style.background=nxt>28?'#ef4444':nxt>20?'#f59e0b':'#22c55e';
+    });
+  },2000);
+}
+</script>
+<!-- VENUE SETTINGS MODAL -->
+<div class="modal-bg" id="venue-settings-modal">
+  <div class="modal" style="width:440px">
+    <div class="modal-title">⚙ Venue Settings</div>
+    <div class="form-row"><div class="form-lbl">Venue Name</div><input class="form-inp" id="vs-name" value="Grand Sports Arena"></div>
+    <div class="form-row"><div class="form-lbl">Event Name</div><input class="form-inp" id="vs-event" value="IPL Final · Match Day"></div>
+    <div class="form-row"><div class="form-lbl">Total Capacity</div><input class="form-inp" id="vs-capacity" type="number" value="80000"></div>
+    <div class="form-row"><div class="form-lbl">Registered Tickets</div><input class="form-inp" id="vs-reg" type="number" value="72450"></div>
+    <div class="form-row"><div class="form-lbl">Expected Walk-ins</div><input class="form-inp" id="vs-walkin" type="number" value="4200"></div>
+    <div class="form-row"><div class="form-lbl">Event Type</div>
+      <select class="form-select" id="vs-type">
+        <option>Cricket / IPL</option><option>Football</option><option>Concert</option><option>Exhibition</option><option>Marathon</option><option>Other</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="document.getElementById('venue-settings-modal').classList.remove('open')">Cancel</button>
+      <button class="mbtn-ok" onclick="applyVenueSettings()">Apply</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
